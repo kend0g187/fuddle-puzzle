@@ -38,7 +38,7 @@ nav h1 {
 }
 
 .board {
-  width: 450px;
+  width: 400px;/* 450px; */
   height: 550px;
   border: 1px solid black;
   display: flex;
@@ -86,7 +86,7 @@ nav h1 {
 }
 
 .keyboard {
-  width: 600px;/* 700px; */
+  width: 500px;/* 700px; */
   height: 250px;/* 300px; */
   margin-top: 60px;
 }
@@ -117,9 +117,9 @@ nav h1 {
 }
 
 .key {
-  width: 44px;/* 50px; */
+  width: 38px;/* 50px; */
   height: 60px;/* 70px */;
-  margin: 5px;
+  margin: 4px;/* 5px; */
   border-radius: 4px;
   display: grid;
   place-items: center;
@@ -131,7 +131,7 @@ nav h1 {
 }
 
 #big {
-  width: 90px;/* 100px; */
+  width: 100px;/* 100px; */
 }
 
 #disabled {
