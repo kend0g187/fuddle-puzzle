@@ -33,12 +33,12 @@ nav h1 {
   height: calc(100vh - 170px);
   display: flex;
   align-items: center;
-  padding-top: 50px;
+  padding-top: 40px;/* 50px; */
   flex-direction: column;
 }
 
 .board {
-  width: 400px;/* 450px; */
+  width: 380px;/* 450px; */
   height: 550px;
   border: 1px solid black;
   display: flex;
@@ -49,7 +49,7 @@ nav h1 {
   flex: 33%;
   display: flex;
   flex-direction: row;
-  margin: 5px;
+  margin: 4px;/* 5px; */
 }
 
 .tile {
@@ -86,9 +86,9 @@ nav h1 {
 }
 
 .keyboard {
-  width: 500px;/* 700px; */
+  width: 480px;/* 700px; */
   height: 250px;/* 300px; */
-  margin-top: 60px;
+  margin-top: 40px;/* 60px; */
 }
 
 .line1 {
@@ -97,7 +97,7 @@ nav h1 {
   flex-direction: row;
   display: flex;
   justify-content: center;
-  margin: 5px;
+  margin: 4px;/* 5px; */
 }
 
 .line2 {
@@ -105,7 +105,7 @@ nav h1 {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin: 5px;
+  margin: 4px;/* 5px; */
 }
 
 .line3 {
@@ -113,7 +113,7 @@ nav h1 {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin: 5px;
+  margin: 4px;/* 5px; */
 }
 
 .key {
