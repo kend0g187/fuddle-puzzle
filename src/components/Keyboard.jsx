@@ -35,11 +35,11 @@ function Keyboard() {
         })}
       </div>
       <div className="line3">
-        <Key keyVal={"ENTER"} bigKey />
+        <Key icon="return.svg" iconAlt="enter icon" keyVal="ENTER" bigKey />
         {keys3.map((key) => {
           return <Key keyVal={key} color={getColorFromKey(key)} key={key} />;
         })}
-        <Key keyVal={"DELETE"} bigKey />
+        <Key icon="backspace.svg" iconAlt="backspace icon" keyVal="DELETE" bigKey />
       </div>
     </div>
   )

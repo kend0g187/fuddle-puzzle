@@ -3,7 +3,6 @@ import './App.css'
 import Board from './components/Board'
 import Keyboard from './components/Keyboard'
 import WinScreen from './components/WinScreen'
-import raw from './assets/test_list.txt'
 
 //used to store globals
 export const AppContext = createContext();
@@ -56,12 +55,12 @@ const keyColorDefault = [
   { letter: "Z", color: "gray" }
 ];
 
-const word_list = ["RIGHT", "WRONG", "NORTH", "SOUTH", "FUNKY", "BAKER", "DIETY", "FUNNY", "ARROW", "BINGE", "JUNKY"];
-const correctWord = word_list[Math.floor(Math.random() * word_list.length)];
-
 function App() {
 
   //variables affecting the DOM should use state
+  const [correctWord, setCorrectWord] = useState([]);
+  const [usedWords, setUsedWords] = useState([]);
+  const [wordList, setWordList] = useState([]);
   const [board, setBoard] = useState(boardDefault);
   const [colorGrid, setColorGrid] = useState(colorGridDefault);
   const [keyColors, setKeyColors] = useState(keyColorDefault);
@@ -73,22 +72,27 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [win, setWin] = useState(true);
 
-  /* //read in the word list when website loads
+  //function to get wordList, correctWord, and usedWords
+  async function fetchTextFile() {
+    const res = await fetch("/word_list_2025.txt")         //fetch the data
+    const text = await res.text()                         //convert the data to a string
+    const words = text.split("\n").map(w => w.trim())     //convert the string to an array
+    const jan1 = new Date(`2025-01-01`)                   //set the start date
+    const today = new Date()                              //get today's date
+    const msSince = today.getTime() - jan1.getTime();     //calculate how many days since Jan 1
+    const daysSince = Math.floor(msSince/1000/60/60/24)
+    const word = words[daysSince]                         //get today's word
+    setUsedWords(words.slice(0, daysSince-1))             //set the state variables
+    setCorrectWord(word)
+    setWordList(words)
+    console.log(wordList)
+    console.log(words)
+  }
+
+  //call the function on app load
   useEffect(() => {
-    console.log("Website has loaded!");
     fetchTextFile();
   }, []);
-
-  //fetch word list
-  const fetchTextFile = () => {
-    fetch(raw)
-      .then((response) => response.text())
-      .then((text) => {
-        const arrayOfStrings = text.split("\n").map((line) => line.trim());
-        setWordList(arrayOfStrings);
-      })
-      .catch((error) => console.error("Error fetching the text file:", error));
-  } */
   
   //handle when user enters a letter
   function handleLetter(letter_input) {
@@ -124,72 +128,80 @@ function App() {
   function handleEnter() {
     //if user hasn't entered five letters yet, do nothing
     if (currAttempt.letterPos < 5) return;
-    else {
 
-      //build the word
-      let word_entered = "";
-      for (let i=0; i<5; i++) {
-        word_entered = word_entered + board[currAttempt.attempt][i];
-      }
+    //build the word
+    let word_entered = "";
+    for (let i=0; i<5; i++) {
+      word_entered = word_entered + board[currAttempt.attempt][i];
+    }
 
-      //check if word is in list
-      if (!word_list.includes(word_entered)) {
-        alert("Word not in list!");
-      }
-      else {
-        let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
-        let taken = [];                                             //this holds indices of 'taken' letters
-        let temp_word = correctWord;                                //duplicate of the correct word that we can modify
-        
-        //check for green
-        for (let i=0; i<5; i++) {
-          if (word_entered[i] === correctWord[i]) {
-            new_colors[i] = "green";                    //update new_colors array
-            taken.push(i);                              //add index to 'taken' array
-            temp_word = removeChar(i, temp_word);       //remove the character from temp_word
-            replaceKeyColor(word_entered[i], "green");  //replace the color of the Keyboard key
-          }
-        }
+    //check if word is in list
+    if (!wordList.includes(word_entered)) {
+      alert("Word not in list!");
+      return;
+    }
 
-        //check for yellow
-        for (let i=0; i<5; i++) {
-          if (taken.includes(i)) continue;  //don't check 'taken' letters
-          else if (temp_word.includes(word_entered[i])) {
-            new_colors[i] = "yellow";                                                                   //update new_colors array
-            let letter_index = getIndexOfFirstChar(word_entered[i], temp_word)                          //remove the letter from temp_word
-            temp_word = temp_word.slice(0, letter_index) + temp_word.slice(letter_index + 1);
-            if (getColorFromKey(word_entered[i])=="gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
-          }
-          else {
-            //key must be gray
-            if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "dark");   //replace the color of the Keyboard key
-          }
-        }
-
-        //update the board
-        const newColorGrid = [...colorGrid];
-        //this doesn't work for some reason??
-        //newColorGrid[currAttempt.attempt] = new_colors;
-        for (let i=0; i<5; i++) {
-          newColorGrid[currAttempt.attempt][i] = new_colors[i];
-        }
-        setColorGrid(newColorGrid);
-        
-        //advance to next row
-        currAttempt.attempt += 1;
-        currAttempt.letterPos = 0;
-
-        //check for end of game
-        if (word_entered === correctWord) {
-          setWin((prev) => true);
-          setGameOver(true);
-        }
-        else if (currAttempt.attempt === 6) {
-          setWin(false);
-          setGameOver(true);
-        }
+    //check if word has been used
+    if (usedWords.includes(word_entered)) {
+      alert("That word has been used before.")
+    }
+      
+    
+    let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
+    let taken = [];                                             //this holds indices of 'taken' letters
+    let temp_word = correctWord;                                //duplicate of the correct word that we can modify
+    
+    //check for green
+    for (let i=0; i<5; i++) {
+      if (word_entered[i] === correctWord[i]) {
+        new_colors[i] = "green";                    //update new_colors array
+        taken.push(i);                              //add index to 'taken' array
+        temp_word = removeChar(i, temp_word);       //remove the character from temp_word
+        replaceKeyColor(word_entered[i], "green");  //replace the color of the Keyboard key
       }
     }
+
+    //check for yellow
+    for (let i=0; i<5; i++) {
+      if (taken.includes(i)) continue;  //don't check 'taken' letters
+      else if (temp_word.includes(word_entered[i])) {
+        new_colors[i] = "yellow";                                                                   //update new_colors array
+        let letter_index = getIndexOfFirstChar(word_entered[i], temp_word)                          //remove the letter from temp_word
+        temp_word = temp_word.slice(0, letter_index) + temp_word.slice(letter_index + 1);
+        if (getColorFromKey(word_entered[i])=="gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
+      }
+      else {
+        //key must be gray
+        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "dark");   //replace the color of the Keyboard key
+      }
+    }
+
+    //update the board
+    const newColorGrid = [...colorGrid];
+    //this doesn't work for some reason??
+    console.log(newColorGrid)
+    newColorGrid[currAttempt.attempt] = [...new_colors];
+    
+    /* for (let i=0; i<5; i++) {
+      newColorGrid[currAttempt.attempt][i] = new_colors[i];
+    } */
+    setColorGrid(newColorGrid);
+    
+    //advance to next row
+    currAttempt.attempt += 1;
+    currAttempt.letterPos = 0;
+
+    //check for end of game
+    if (word_entered === correctWord) {
+      setWin((prev) => true);
+      setGameOver(true);
+    }
+    else if (currAttempt.attempt === 6) {
+      setWin(false);
+      setGameOver(true);
+    }
+    
+
   }
 
   //function to get the letter position of the first occurance of that letter

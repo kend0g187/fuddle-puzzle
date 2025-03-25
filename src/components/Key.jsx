@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { AppContext } from "../App";
 
-function Key({ keyVal, bigKey, color }) {
+function Key({ icon, iconAlt, keyVal, bigKey, color }) {
 
   //import globals
   const {
@@ -9,8 +9,10 @@ function Key({ keyVal, bigKey, color }) {
   } = useContext(AppContext);
   
   return (
-    <div className="key" id={bigKey ? "big" : color} onClick={() => handleInput(keyVal)}>
-      {keyVal}
+    <div className={`key ${bigKey ? "big" : color}`} onClick={() => handleInput(keyVal)}>
+      {icon ? (
+        <img src={icon} alt={iconAlt} />
+      ): keyVal}
     </div>
   );
 }

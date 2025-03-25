@@ -2,7 +2,7 @@
   text-align: center;
   background-color: #121212;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   /* display: flex; */
   color: white;
 }
@@ -65,23 +65,23 @@ nav h1 {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-#green {
+.green {
   background-color: #528d4e;
 }
 
-#yellow {
+.yellow {
   background-color: #b49f39;
 }
 
-#dark {
+.dark {
   background-color: #3a393c;
 }
 
-#gray {
+.gray {
   background-color: grey;
 }
 
-#unchecked {
+.unchecked {
   background-color: #3a393c;
 }
 
@@ -130,8 +130,8 @@ nav h1 {
   cursor: pointer;
 }
 
-#big {
-  width: 100px;/* 100px; */
+.big {
+  width: 54px;
 }
 
 #disabled {
