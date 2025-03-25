@@ -3,57 +3,18 @@ import './App.css'
 import Board from './components/Board'
 import Keyboard from './components/Keyboard'
 import WinScreen from './components/WinScreen'
+import { 
+  boardDefault, 
+  colorGridDefault, 
+  keyColorDefault, 
+  removeChar,
+  to2dDeepCopy,
+  allLetters,
+  fetchData
+} from './util.js'
 
 //used to store globals
 export const AppContext = createContext();
-
-//static globals can be declared outside of component functions
-const boardDefault = [
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-];
-
-const colorGridDefault = [
-  ["false", "false", "false", "false", "false"],
-  ["false", "false", "false", "false", "false"],
-  ["false", "false", "false", "false", "false"],
-  ["false", "false", "false", "false", "false"],
-  ["false", "false", "false", "false", "false"],
-  ["false", "false", "false", "false", "false"],
-];
-
-const keyColorDefault = [
-  { letter: "A", color: "gray" },
-  { letter: "B", color: "gray" },
-  { letter: "C", color: "gray" },
-  { letter: "D", color: "gray" },
-  { letter: "E", color: "gray" },
-  { letter: "F", color: "gray" },
-  { letter: "G", color: "gray" },
-  { letter: "H", color: "gray" },
-  { letter: "I", color: "gray" },
-  { letter: "J", color: "gray" },
-  { letter: "K", color: "gray" },
-  { letter: "L", color: "gray" },
-  { letter: "M", color: "gray" },
-  { letter: "N", color: "gray" },
-  { letter: "O", color: "gray" },
-  { letter: "P", color: "gray" },
-  { letter: "Q", color: "gray" },
-  { letter: "R", color: "gray" },
-  { letter: "S", color: "gray" },
-  { letter: "T", color: "gray" },
-  { letter: "U", color: "gray" },
-  { letter: "V", color: "gray" },
-  { letter: "W", color: "gray" },
-  { letter: "X", color: "gray" },
-  { letter: "Y", color: "gray" },
-  { letter: "Z", color: "gray" }
-];
 
 function App() {
 
@@ -74,25 +35,20 @@ function App() {
 
   //function to get wordList, correctWord, and usedWords
   async function fetchTextFile() {
-    const res = await fetch("/word_list_2025.txt")         //fetch the data
-    const text = await res.text()                         //convert the data to a string
-    const words = text.split("\n").map(w => w.trim())     //convert the string to an array
-    const jan1 = new Date(`2025-01-01`)                   //set the start date
-    const today = new Date()                              //get today's date
-    const msSince = today.getTime() - jan1.getTime();     //calculate how many days since Jan 1
-    const daysSince = Math.floor(msSince/1000/60/60/24)
-    const word = words[daysSince]                         //get today's word
-    setUsedWords(words.slice(0, daysSince-1))             //set the state variables
-    setCorrectWord(word)
+    const { words, usedWords, correctWord } = await fetchData()
     setWordList(words)
-    console.log(wordList)
-    console.log(words)
+    setUsedWords(usedWords)
+    setCorrectWord(correctWord)
   }
 
   //call the function on app load
   useEffect(() => {
     fetchTextFile();
   }, []);
+  
+  useEffect(() => {
+    console.log("useEffect wordList:", wordList)
+  }, [wordList])
   
   //handle when user enters a letter
   function handleLetter(letter_input) {
@@ -135,14 +91,19 @@ function App() {
       word_entered = word_entered + board[currAttempt.attempt][i];
     }
 
+    // log for debugging
+    console.log("word_entered:", word_entered)
+    console.log("correct_word:", correctWord)
+    console.log("wordList:", wordList.slice(100, 125))
+
     //check if word is in list
-    if (!wordList.includes(word_entered)) {
+    if (!wordList.includes(word_entered.toUpperCase())) {
       alert("Word not in list!");
       return;
     }
 
     //check if word has been used
-    if (usedWords.includes(word_entered)) {
+    if (usedWords.includes(word_entered.toUpperCase())) {
       alert("That word has been used before.")
     }
       
@@ -153,7 +114,10 @@ function App() {
     
     //check for green
     for (let i=0; i<5; i++) {
-      if (word_entered[i] === correctWord[i]) {
+      const ltr = word_entered[i]
+      const correctLtr = correctWord[i]
+
+      if (ltr === correctLtr) {
         new_colors[i] = "green";                    //update new_colors array
         taken.push(i);                              //add index to 'taken' array
         temp_word = removeChar(i, temp_word);       //remove the character from temp_word
@@ -165,8 +129,9 @@ function App() {
     for (let i=0; i<5; i++) {
       if (taken.includes(i)) continue;  //don't check 'taken' letters
       else if (temp_word.includes(word_entered[i])) {
+        const ltr = word_entered[i];
         new_colors[i] = "yellow";                                                                   //update new_colors array
-        let letter_index = getIndexOfFirstChar(word_entered[i], temp_word)                          //remove the letter from temp_word
+        let letter_index = temp_word.indexOf(ltr)                          //remove the letter from temp_word
         temp_word = temp_word.slice(0, letter_index) + temp_word.slice(letter_index + 1);
         if (getColorFromKey(word_entered[i])=="gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
       }
@@ -177,10 +142,11 @@ function App() {
     }
 
     //update the board
-    const newColorGrid = [...colorGrid];
+    const newColorGrid = to2dDeepCopy(colorGrid);
+    console.log("newColorGrid (before mutation):", newColorGrid)
     //this doesn't work for some reason??
-    console.log(newColorGrid)
     newColorGrid[currAttempt.attempt] = [...new_colors];
+    console.log("newColorGrid (after mutation):", newColorGrid)
     
     /* for (let i=0; i<5; i++) {
       newColorGrid[currAttempt.attempt][i] = new_colors[i];
@@ -190,6 +156,7 @@ function App() {
     //advance to next row
     currAttempt.attempt += 1;
     currAttempt.letterPos = 0;
+    setCurrAttempt({...currAttempt}) // update state
 
     //check for end of game
     if (word_entered === correctWord) {
@@ -204,23 +171,7 @@ function App() {
 
   }
 
-  //function to get the letter position of the first occurance of that letter
-  function getIndexOfFirstChar( the_char, the_string ) {
-    for (let i=0; i<the_string.length; i++) {
-      if (the_char === the_string[i]) return i;
-    }
-    return -1;
-  }
 
-  //function to remove a character from a string
-  function removeChar( index, the_string ) {
-    let new_str = "";
-    for (let i=0; i<the_string.length; i++) {
-      if (i === index) new_str = new_str.concat("_");
-      else new_str = new_str.concat(the_string[i]);
-    }
-    return new_str;
-  }
 
   //function to replace a key color
   function replaceKeyColor( the_key, the_color ) {
@@ -247,10 +198,7 @@ function App() {
       handleEnter();
     } else if (inputkey === "Backspace" || inputkey === "DELETE") {
       handleDelete();
-    } else if (["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
-                "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"].includes(inputkey)) 
+    } else if (allLetters.includes(inputkey)) 
     {  
       handleLetter(inputkey.toUpperCase());
     }

@@ -7,7 +7,7 @@ function Tile({ tilePos, attemptVal }) {
   const letterState = colorGrid[attemptVal][tilePos];
 
   return (
-    <div className="tile" id={letterState}>
+    <div className={`tile ${letterState}`}>
       {letter}
     </div>
   );
