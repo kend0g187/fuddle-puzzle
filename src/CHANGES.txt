@@ -1,0 +1,26 @@
+App.jsx, line 6
+    Moved many functions to a utility file for organization.
+
+util.js, line 71
+    Created a function for fetching data.
+    Returns words, correctWord, and usedWords.
+    Works dynamically for any year.
+    If a word list doesn't exist for the current year, it throws an error.
+
+Keyboard.jsx, line 22
+    Removed the dependency array for the useEffect which assigns event listeners to keydown on document.
+    See the comment there for more details, but in short, it should not have only been on mount.
+
+App.jsx, lines 100 and 106
+    Checks against word_entered.toUpperCase() because the user may have entered lowercase letters.
+
+App.jsx, line 134
+    Using the <string>.indexOf() method, as the previous function wasn't necessary.
+
+App.jsx, line 145
+    Using a function I made called to2dDeepCopy, as making a copy of a 2d array only clones the outer array, while the inner arrays are still references to the original inner arrays. I think this is why the colors weren't updating properly.
+
+App.jsx, line 159
+    Update the currAttempt state as it wasn't being updated before.
+
+I think that's everything I did!
