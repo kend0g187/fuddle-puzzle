@@ -60,6 +60,7 @@ export function removeChar( index, the_string ) {
   return new_str;
 }
 
+//creates a 'deep' copy of the board array so previous rows don't return to blank
 export function to2dDeepCopy(arr) {
   const copy = [...arr]
   copy.forEach((row, i) => {
@@ -79,32 +80,11 @@ export async function fetchData() {
   const text = await res.text()
   const words = text.split('\n').map(w => w.trim()) // split by new line, and remove extra space on each word
 
-  // get jan 1
+  // get number of days since Jan 1 and generate used words list
   const jan1 = new Date(`${year}-01-01`)
   const daysSince = Math.floor((now.getTime() - jan1.getTime())/1000/60/60/24)
-
   const correctWord = words[daysSince]
   const usedWords = words.slice(0, daysSince)
 
   return { words, correctWord, usedWords }
 }
-
-/*
-  OLD fetch function
-  //function to get wordList, correctWord, and usedWords
-  async function fetchTextFile() {
-    const res = await fetch("/word_list_2025.txt")         //fetch the data
-    const text = await res.text()                         //convert the data to a string
-
-    const words = text.split("\n").map(w => w.trim())     //convert the string to an array
-    setWordList([...words])
-
-    const jan1 = new Date(`2025-01-01`)                   //set the start date
-    const today = new Date()                              //get today's date
-    const msSince = today.getTime() - jan1.getTime();     //calculate how many days since Jan 1
-    const daysSince = Math.floor(msSince/1000/60/60/24)
-    const word = words[daysSince]                         //get today's word
-    setUsedWords(words.slice(0, daysSince-1))             //set the state variables
-    setCorrectWord(word)
-  }
-*/

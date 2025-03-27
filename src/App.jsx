@@ -3,6 +3,7 @@ import './App.css'
 import Board from './components/Board'
 import Keyboard from './components/Keyboard'
 import WinScreen from './components/WinScreen'
+import InfoScreen from './components/InfoScreen.jsx'
 import { 
   boardDefault, 
   colorGridDefault, 
@@ -17,7 +18,6 @@ import {
 export const AppContext = createContext();
 
 function App() {
-
   //variables affecting the DOM should use state
   const [correctWord, setCorrectWord] = useState([]);
   const [usedWords, setUsedWords] = useState([]);
@@ -30,6 +30,7 @@ function App() {
     letterPos: 0,
     keyVal: ""
   });
+  const [showInfo, setShowInfo] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [win, setWin] = useState(true);
 
@@ -45,10 +46,6 @@ function App() {
   useEffect(() => {
     fetchTextFile();
   }, []);
-  
-  useEffect(() => {
-    console.log("useEffect wordList:", wordList)
-  }, [wordList])
   
   //handle when user enters a letter
   function handleLetter(letter_input) {
@@ -69,15 +66,14 @@ function App() {
   function handleDelete() {
     //if user hasn't entered a letter yet, do nothing
     if (currAttempt.letterPos === 0) return;
-    else {
-      //update the board
-      const newBoard = [...board];
-      newBoard[currAttempt.attempt][currAttempt.letterPos - 1] = "";
-      setBoard((prev) => newBoard);
+    
+    //update the board
+    const newBoard = [...board];
+    newBoard[currAttempt.attempt][currAttempt.letterPos - 1] = "";
+    setBoard((prev) => newBoard);
 
-      //move to previous letter position
-      currAttempt.letterPos -= 1;
-    }
+    //move to previous letter position
+    currAttempt.letterPos -= 1;
   }
 
   //handle when user hits enter
@@ -91,29 +87,33 @@ function App() {
       word_entered = word_entered + board[currAttempt.attempt][i];
     }
 
-    // log for debugging
-    console.log("word_entered:", word_entered)
-    console.log("correct_word:", correctWord)
-    console.log("wordList:", wordList.slice(100, 125))
-
     //check if word is in list
-    if (!wordList.includes(word_entered.toUpperCase())) {
-      alert("Word not in list!");
+    if (!wordList.includes(word_entered)) {
+      alert(word_entered + " is not in the word list!");
+      clearRow();
       return;
     }
 
     //check if word has been used
-    if (usedWords.includes(word_entered.toUpperCase())) {
-      alert("That word has been used before.")
+    if (usedWords.includes(word_entered)) {
+      let text = word_entered + " has previously been used. Would you still like to submit it?";
+      if (confirm(text) == false) {
+        clearRow();
+        return;
+      } 
     }
-      
-    
+
+    //submit the word
+    submitWord(word_entered);
+  }
+
+  function submitWord(word_entered) {
     let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
     let taken = [];                                             //this holds indices of 'taken' letters
     let temp_word = correctWord;                                //duplicate of the correct word that we can modify
-    
+
     //check for green
-    for (let i=0; i<5; i++) {
+    for (let i = 0; i < 5; i++) {
       const ltr = word_entered[i]
       const correctLtr = correctWord[i]
 
@@ -126,14 +126,14 @@ function App() {
     }
 
     //check for yellow
-    for (let i=0; i<5; i++) {
+    for (let i = 0; i < 5; i++) {
       if (taken.includes(i)) continue;  //don't check 'taken' letters
       else if (temp_word.includes(word_entered[i])) {
         const ltr = word_entered[i];
         new_colors[i] = "yellow";                                                                   //update new_colors array
         let letter_index = temp_word.indexOf(ltr)                          //remove the letter from temp_word
         temp_word = temp_word.slice(0, letter_index) + temp_word.slice(letter_index + 1);
-        if (getColorFromKey(word_entered[i])=="gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
+        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
       }
       else {
         //key must be gray
@@ -142,21 +142,14 @@ function App() {
     }
 
     //update the board
-    const newColorGrid = to2dDeepCopy(colorGrid);
-    console.log("newColorGrid (before mutation):", newColorGrid)
-    //this doesn't work for some reason??
+    const newColorGrid = to2dDeepCopy(colorGrid)
     newColorGrid[currAttempt.attempt] = [...new_colors];
-    console.log("newColorGrid (after mutation):", newColorGrid)
-    
-    /* for (let i=0; i<5; i++) {
-      newColorGrid[currAttempt.attempt][i] = new_colors[i];
-    } */
     setColorGrid(newColorGrid);
-    
+
     //advance to next row
     currAttempt.attempt += 1;
     currAttempt.letterPos = 0;
-    setCurrAttempt({...currAttempt}) // update state
+    setCurrAttempt({ ...currAttempt }) // update state
 
     //check for end of game
     if (word_entered === correctWord) {
@@ -167,11 +160,19 @@ function App() {
       setWin(false);
       setGameOver(true);
     }
-    
-
   }
 
+  function clearRow() {
+    //update the board
+    const newBoard = [...board];
+    for (let i=0; i<5; i++) {
+      newBoard[currAttempt.attempt][i] = "";
+    }
+    setBoard((prev) => newBoard);
 
+    //move to first letter position
+    currAttempt.letterPos = 0;
+  }
 
   //function to replace a key color
   function replaceKeyColor( the_key, the_color ) {
@@ -211,7 +212,7 @@ function App() {
       </nav>
 
       <div className="below-nav">
-        <button>Game Info</button>
+        <button onClick={() => setShowInfo(!showInfo)}>Game Info</button>
       </div>
 
       <AppContext.Provider
@@ -227,7 +228,7 @@ function App() {
         }}
       >
         <div className="game">
-          {gameOver ? <><Board /><WinScreen /></> : <><Board /><Keyboard /></>}
+          {showInfo ? <InfoScreen /> : (gameOver ? <><Board /><WinScreen /></> : <><Board /><Keyboard /></>)}
         </div>
       </AppContext.Provider>
     </div>

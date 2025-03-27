@@ -20,10 +20,6 @@ function Keyboard() {
       document.removeEventListener("keydown", eventToString);
     };
   });
-  // Removed the empty dependency array.
-  // You don't want this to only be applied on mount. You want this to be applied EVERY time the component re-renders, so you ALWAYS have the most up-to-date version of eventToString. Otherwise, you'll end up getting old versions of eventToString that reference older versions of the state.
-  // If the above comment is too long, I recommend enabling word-wrap in VSCode's settings.
-
 
   return (
     <div className="keyboard" onKeyDown={eventToString}>
