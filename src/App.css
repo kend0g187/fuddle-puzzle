@@ -1,19 +1,26 @@
-.App {
-  text-align: center;
-  background-color: #121212;
-  width: 100vw;
-  min-height: 100vh;
-  /* display: flex; */
-  color: white;
+* {
+  box-sizing: border-box;
 }
 
+.App {
+  text-align: center;
+  width: 100vw;
+  min-height: 100dvh;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
 body {
+  background-color: #121212;
   padding: 0%;
   margin: 0;
 }
 
 nav {
-  height: 60px;
+  padding: 8px;
   width: 100%;
   margin: 0;
   border-bottom: 1px solid grey;
@@ -28,13 +35,24 @@ nav h1 {
   font-size: 45px;
 }
 
+.below-nav button {
+  cursor: pointer;
+  color: white;
+  text-decoration: underline;
+  border: 0;
+  background-color: transparent;
+  padding: 8px;
+}
+
 .game {
   width: 100vw;
   height: calc(100vh - 170px);
   display: flex;
   align-items: center;
-  padding-top: 40px;/* 50px; */
   flex-direction: column;
+  flex-grow: 1;
+  padding-top: 8px;/* 50px; */
+  padding-bottom: 25px;
 }
 
 .board {

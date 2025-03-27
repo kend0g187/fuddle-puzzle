@@ -207,8 +207,13 @@ function App() {
   return (
     <div className='App'>
       <nav>
-        <h1>Fuddle Puzzle</h1> 
+        <h1>Fuddle Puzzle</h1>
       </nav>
+
+      <div className="below-nav">
+        <button>Game Info</button>
+      </div>
+
       <AppContext.Provider
         value={{
           board,
