@@ -23,8 +23,6 @@ nav {
   width: 100%;
   margin: 0;
   border-bottom: 1px solid grey;
-  /* display: grid; */
-  /* place-items: center; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -43,10 +41,13 @@ nav h1 {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 nav img {
   cursor: pointer;
+  width: 28px;
 }
 
 .game {
