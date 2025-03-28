@@ -7,7 +7,7 @@ function InfoScreen() {
         <li>Guess the 5-letter word.</li>
         <li>Words that only work as 3 or 4-letter words + an ending, such as FOXES or VOTED, are excluded.</li>
         <li>Esoteric words, slang words, and proper nouns are excluded.</li>
-        <li>For the complete word list, click <a href="/all_word_list.txt" target='_blank'>here</a>.</li>
+        <li>For the complete word list, click <a href="/all_word_list.pdf" target='_blank'>here</a>.</li>
         <li>The letter tiles will change color after you submit each guess.</li>
         <ul>
           <li>Green tiles indicate that the letter is correct.</li>

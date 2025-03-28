@@ -15,7 +15,7 @@ function WinScreen() {
 
   return (
     <div>
-      <h1>{message}</h1>
+      <h2>{message}</h2>
     </div>
   );
 }
