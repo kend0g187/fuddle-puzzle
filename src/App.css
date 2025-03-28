@@ -23,8 +23,16 @@ nav {
   width: 100%;
   margin: 0;
   border-bottom: 1px solid grey;
-  display: grid;
-  place-items: center;
+  /* display: grid; */
+  /* place-items: center; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+nav .spacer {
+  min-width: auto;
 }
 
 nav h1 {
@@ -32,16 +40,13 @@ nav h1 {
   font-family: Helvetica, Arial, sans-serif;
   color: white;
   font-size: 36px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.below-nav button {
+nav img {
   cursor: pointer;
-  font-size: medium;
-  color: white;
-  text-decoration: underline;
-  border: 0;
-  background-color: transparent;
-  padding: 8px;
 }
 
 .game {
@@ -55,8 +60,8 @@ nav h1 {
 }
 
 .board {
-  width: 380px;/* 450px; */
-  height: 550px;
+  width: 380px;
+  height: 450px;
   border: 1px solid black;
   display: flex;
   flex-direction: column;
@@ -66,14 +71,15 @@ nav h1 {
   flex: 33%;
   display: flex;
   flex-direction: row;
-  margin: 4px;/* 5px; */
+  margin: 3px;/* 5px; */
 }
 
 .tile {
   flex: 33%;
   height: 100%;
+  max-height: 68px;
   border: 1px solid grey;
-  margin: 5px;
+  margin: 3px;
   display: grid;
   place-items: center;
   font-size: 30px;
@@ -134,9 +140,10 @@ nav h1 {
 }
 
 .key {
-  width: 36px;/* 50px; */
-  height: 60px;/* 70px */;
-  margin: 3px;/* 5px; */
+  width: 36px;
+  max-width: calc(10vw - 6px);
+  height: 60px;
+  margin: 3px;
   border-radius: 4px;
   display: grid;
   place-items: center;
@@ -147,6 +154,46 @@ nav h1 {
 }
 
 .big {
-  width: 54px;
+  width: 57px;
+  max-width: calc(15vw - 6px);
   background-color: grey;
+}
+
+.game-instructions {
+  font-family: 'Rubik', sans-serif;
+  text-align: left;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.game-instructions ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.game-instructions ul li {
+  margin-bottom: 8px;
+}
+
+.game-instructions ul ul {
+  margin-top: 1px;
+  margin-bottom: 1px;
+  padding-left: 20px;
+  list-style-type: circle;
+}
+
+.game-instructions a {
+  color: #66ccff;
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .game-instructions {
+    font-size: 15px;
+    padding: 12px;
+  }
 }

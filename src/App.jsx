@@ -208,12 +208,10 @@ function App() {
   return (
     <div className='App'>
       <nav>
+        <div className="spacer"></div>
         <h1>Fuddle Puzzle</h1>
+        <img src='/infoicon.svg' alt='info icon' onClick={() => setShowInfo(!showInfo)} />
       </nav>
-
-      <div className="below-nav">
-        <button onClick={() => setShowInfo(!showInfo)}>Game Info</button>
-      </div>
 
       <AppContext.Provider
         value={{
