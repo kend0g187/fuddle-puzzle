@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext } from 'react'
+// import Cookies  from 'js-cookie'
 import './App.css'
 import Board from './components/Board'
 import Keyboard from './components/Keyboard'
@@ -33,6 +34,8 @@ function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [win, setWin] = useState(true);
+  // const [cookieDate, setCookieDate] = useState("");
+  // const [cookieWords, setCookieWords] = useState([]);
 
   //function to get wordList, correctWord, and usedWords
   async function fetchTextFile() {
@@ -42,13 +45,24 @@ function App() {
     setCorrectWord(correctWord)
   }
 
+  //function to get data from cookie
+  /* async function fetchCookieData() {
+    const date = await Cookies.get('date'); 
+    setCookieDate(date)
+    const words = await Cookies.get('words');
+    setCookieWords(words)
+  } */
+
   //call the function on app load
   useEffect(() => {
     fetchTextFile();
+    // fetchCookieData();
   }, []);
   
   //handle when user enters a letter
   function handleLetter(letter_input) {
+    /* console.log(cookieDate);
+    console.log(cookieWords); */
     //if user has already entered five letters, do nothing
     if (currAttempt.letterPos > 4) return;
     else {
@@ -103,12 +117,16 @@ function App() {
       } 
     }
 
-    //submit the word
+    //submit the word and set a cookie
     submitWord(word_entered);
+    /* const newWords =  [...cookieWords];
+    newWords[currAttempt.attempt-1] = word_entered;
+    setCookieWords(newWords);
+    setCookie(); */
   }
 
   function submitWord(word_entered) {
-    let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
+    let new_colors = ["red", "red", "red", "red", "red"];  //this holds Tile colors for the current row
     let taken = [];                                             //this holds indices of 'taken' letters
     let temp_word = correctWord;                                //duplicate of the correct word that we can modify
 
@@ -137,7 +155,7 @@ function App() {
       }
       else {
         //key must be gray
-        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "dark");   //replace the color of the Keyboard key
+        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "red");   //replace the color of the Keyboard key
       }
     }
 
@@ -186,6 +204,17 @@ function App() {
     const foundIndex = keyColors.findIndex(x => x.letter == the_key);
     return keyColors[foundIndex].color;
   }
+
+  /* function setCookie() {
+    const date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let cookiedate = `${day}-${month}-${year}`;
+    Cookies.set("date", cookiedate, { expires: 2 });
+    Cookies.set("words", cookieWords, { expires: 2 });
+  } */
 
   //this is necessary because using the keyboard is different than clicking a key
   function eventToString(event){

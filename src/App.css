@@ -63,8 +63,9 @@ nav img {
 
 .board {
   width: 380px;
-  max-width: calc((vw - 30) / 5);
+  max-width: calc(100vw - 30px);
   height: 450px;
+  max-height: calc(100vh - 266px);
   border: 1px solid black;
   display: flex;
   flex-direction: column;
@@ -80,7 +81,6 @@ nav img {
 .tile {
   flex: 33%;
   height: 100%;
-  max-height: calc((vh - 296) / 6);
   border: 1px solid grey;
   margin: 3px;
   display: grid;
@@ -99,8 +99,8 @@ nav img {
   background-color: #b49f39;
 }
 
-.dark {
-  background-color: #3a393c;
+.red {
+  background-color: #a13243;
 }
 
 .gray {
