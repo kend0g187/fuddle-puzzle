@@ -6,14 +6,14 @@
   text-align: center;
   width: 100vw;
   min-height: 100dvh;
-  color: white;
+  color: black;
   display: flex;
   flex-direction: column;
 }
 
 
 body {
-  background-color: #121212;
+  background-color: #FAFAF0;
   padding: 0%;
   margin: 0;
 }
@@ -28,6 +28,7 @@ nav {
   justify-content: space-between;
   align-items: center;
   position: relative;
+  background-color: lightgray;
 }
 
 nav .spacer {
@@ -37,7 +38,7 @@ nav .spacer {
 nav h1 {
   margin: 0;
   font-family: Helvetica, Arial, sans-serif;
-  color: white;
+  color: black;
   font-size: 36px;
   position: absolute;
   left: 50%;
@@ -88,23 +89,24 @@ nav img {
   font-size: 30px;
   font-weight: bolder;
   color: white;
+  background-color: gray;
   font-family: Arial, Helvetica, sans-serif;
 }
 
 .green {
-  background-color: #528d4e;
+  background-color: #4CAF50;
 }
 
 .yellow {
-  background-color: #b49f39;
+  background-color: #FFC107;
 }
 
-.red {
-  background-color: #a13243;
+.dark {
+  background-color: #424242;
 }
 
 .gray {
-  background-color: grey;
+  background-color: gray;
 }
 
 .unchecked {

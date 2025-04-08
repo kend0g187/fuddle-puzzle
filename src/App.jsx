@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext } from 'react'
-// import Cookies  from 'js-cookie'
+import Cookies  from 'js-cookie'
 import './App.css'
 import Board from './components/Board'
 import Keyboard from './components/Keyboard'
@@ -34,8 +34,9 @@ function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [win, setWin] = useState(true);
-  // const [cookieDate, setCookieDate] = useState("");
-  // const [cookieWords, setCookieWords] = useState([]);
+  const [cookieDate, setCookieDate] = useState("");
+  const [cookieWords, setCookieWords] = useState([]);
+  const [cookieGameOver, setCookieGameOver] = useState(false);
 
   //function to get wordList, correctWord, and usedWords
   async function fetchTextFile() {
@@ -46,23 +47,50 @@ function App() {
   }
 
   //function to get data from cookie
-  /* async function fetchCookieData() {
+  async function fetchCookieData() {
     const date = await Cookies.get('date'); 
     setCookieDate(date)
     const words = await Cookies.get('words');
     setCookieWords(words)
-  } */
+    const over = await Cookies.get('over');
+    setCookieGameOver(over)
+  }
+
+  function interpretCookie() {
+    const date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    let today = `${day}-${month}-${year}`;
+
+    console.log("interpreting cookie. date " + cookieDate + " words " + cookieWords + " over " + cookieGameOver)
+    //they've already played today
+    if (today == cookieDate) {
+      //submit the words they've already entered
+      for (let i=0; i<cookieWords.length; i++) submitWord(cookieWords[i]);
+      //check for game over
+      if (cookieGameOver) setGameOver(true);
+    }
+    //they haven't played today, get the new cookie ready
+    else {
+      console.log("setting new cookie")
+      setCookieDate(today)
+      setCookieWords([])
+      setCookieGameOver(false)
+    }
+    console.log("finishing cookie. date " + cookieDate + " words " + cookieWords + " over " + cookieGameOver)
+  }
 
   //call the function on app load
   useEffect(() => {
     fetchTextFile();
-    // fetchCookieData();
+    fetchCookieData();
+    interpretCookie();
+    console.log("finishing cookie. date " + cookieDate + " words " + cookieWords + " over " + cookieGameOver)
   }, []);
   
   //handle when user enters a letter
   function handleLetter(letter_input) {
-    /* console.log(cookieDate);
-    console.log(cookieWords); */
     //if user has already entered five letters, do nothing
     if (currAttempt.letterPos > 4) return;
     else {
@@ -117,16 +145,18 @@ function App() {
       } 
     }
 
-    //submit the word and set a cookie
+    //submit the word and update the cookie
     submitWord(word_entered);
-    /* const newWords =  [...cookieWords];
+    console.log(cookieDate)
+    console.log(cookieWords)
+    const newWords =  [...cookieWords];
     newWords[currAttempt.attempt-1] = word_entered;
     setCookieWords(newWords);
-    setCookie(); */
+    setCookie();
   }
 
   function submitWord(word_entered) {
-    let new_colors = ["red", "red", "red", "red", "red"];  //this holds Tile colors for the current row
+    let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
     let taken = [];                                             //this holds indices of 'taken' letters
     let temp_word = correctWord;                                //duplicate of the correct word that we can modify
 
@@ -145,17 +175,17 @@ function App() {
 
     //check for yellow
     for (let i = 0; i < 5; i++) {
-      if (taken.includes(i)) continue;  //don't check 'taken' letters
+      if (taken.includes(i)) continue;                  //don't check 'taken' letters
       else if (temp_word.includes(word_entered[i])) {
         const ltr = word_entered[i];
-        new_colors[i] = "yellow";                                                                   //update new_colors array
-        let letter_index = temp_word.indexOf(ltr)                          //remove the letter from temp_word
+        new_colors[i] = "yellow";                       //update new_colors array
+        let letter_index = temp_word.indexOf(ltr)       //remove the letter from temp_word
         temp_word = temp_word.slice(0, letter_index) + temp_word.slice(letter_index + 1);
         if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
       }
       else {
-        //key must be gray
-        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "red");   //replace the color of the Keyboard key
+        //tile must be dark, make keyboard key dark, if it's not already green or yellow
+        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "dark");   //replace the color of the Keyboard key
       }
     }
 
@@ -205,7 +235,7 @@ function App() {
     return keyColors[foundIndex].color;
   }
 
-  /* function setCookie() {
+  function setCookie() {
     const date = new Date();
     let day = date.getDate();
     let month = date.getMonth() + 1;
@@ -214,7 +244,7 @@ function App() {
     let cookiedate = `${day}-${month}-${year}`;
     Cookies.set("date", cookiedate, { expires: 2 });
     Cookies.set("words", cookieWords, { expires: 2 });
-  } */
+  }
 
   //this is necessary because using the keyboard is different than clicking a key
   function eventToString(event){
