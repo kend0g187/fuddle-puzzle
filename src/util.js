@@ -88,3 +88,61 @@ export async function fetchData() {
 
   return { words, correctWord, usedWords }
 }
+
+export function savePlayerData(data = {}) {
+  localStorage.setItem('fuddle-puzzle-data', JSON.stringify({
+    date: data.date || todayString(),
+    guessedWords: data.guessedWords || [],
+    over: data.over || false
+  }))
+}
+
+export function defaultPlayerData() {
+  return {
+    date: todayString(),
+    guessedWords: [],
+    over: false
+  }
+}
+
+export function resetLSData() {
+  localStorage.setItem('fuddle-puzzle-data', JSON.stringify(defaultPlayerData()))
+}
+
+export function safelyReadPlayerData() {
+  try {
+    const data = JSON.parse(localStorage.getItem('fuddle-puzzle-data'))
+    console.log("This is safelyReadPlayerData. Data is:", data)
+    if (typeof data !== 'object')
+      console.log("data is not an object")
+    if (Array.isArray(data))
+      console.log("data is an array")
+    if (data === null) {
+      console.log("data is null")
+      return defaultPlayerData()
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error)
+    console.warn("Failed reading JSON, using default data.")
+    return defaultPlayerData()
+  }
+}
+
+export function addWordToLS(word) {
+  const data = safelyReadPlayerData()
+  data.guessedWords.push(word)
+  console.log("Saving new guessed word:", word, data)
+  savePlayerData(data)
+}
+
+export function todayString() {
+  const date = new Date();
+
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // The month index starts from 0
+  const year = date.getFullYear();
+
+  return `${year}-${month}-${day}`;
+}

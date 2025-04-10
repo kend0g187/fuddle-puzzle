@@ -62,6 +62,13 @@ nav img {
   padding-bottom: 5px;
 }
 
+.board-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+}
+
 .board {
   width: 380px;
   max-width: calc(100vw - 30px);
@@ -70,6 +77,7 @@ nav img {
   border: 1px solid black;
   display: flex;
   flex-direction: column;
+  padding-bottom: 6px;
 }
 
 .row {
@@ -116,7 +124,7 @@ nav img {
 .keyboard {
   max-width: 450px;
   max-height: 250px;
-  position: absolute;
+  /* position: absolute; */
   bottom: 5px;
 }
 

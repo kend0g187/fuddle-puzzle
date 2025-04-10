@@ -1,18 +1,22 @@
 import { useState, useEffect, createContext } from 'react'
-import Cookies  from 'js-cookie'
 import './App.css'
 import Board from './components/Board'
 import Keyboard from './components/Keyboard'
 import WinScreen from './components/WinScreen'
 import InfoScreen from './components/InfoScreen.jsx'
 import { 
-  boardDefault, 
-  colorGridDefault, 
-  keyColorDefault, 
-  removeChar,
-  to2dDeepCopy,
-  allLetters,
-  fetchData
+  boardDefault,       //2d array of blank tile letters
+  colorGridDefault,   //2d array of blank tile colors
+  keyColorDefault,    //array of default keyboard key colors
+  allLetters,         //array of 26 lowercase and 26 uppercase letters
+  removeChar,         //function to remove a letter from a word
+  to2dDeepCopy,       //function to create a real copy of a 2d array
+  todayString,        //function to get today's date as a string
+  fetchData,          //function to read in the word list
+  defaultPlayerData,  //function to get defaults for LS data
+  addWordToLS,        //function to add submitted word to LS 'guessedWords'
+  resetLSData,        //function to reset LS data
+  safelyReadPlayerData
 } from './util.js'
 
 //used to store globals
@@ -20,73 +24,85 @@ export const AppContext = createContext();
 
 function App() {
   //variables affecting the DOM should use state
-  const [correctWord, setCorrectWord] = useState([]);
-  const [usedWords, setUsedWords] = useState([]);
-  const [wordList, setWordList] = useState([]);
-  const [board, setBoard] = useState(boardDefault);
-  const [colorGrid, setColorGrid] = useState(colorGridDefault);
-  const [keyColors, setKeyColors] = useState(keyColorDefault);
-  const [currAttempt, setCurrAttempt] = useState({
+  const [correctWord, setCorrectWord] = useState([]);           //the answer
+  const [usedWords, setUsedWords] = useState([]);               //list of past answers
+  const [wordList, setWordList] = useState([]);                 //list of all possible answers
+  const [board, setBoard] = useState(boardDefault);             //the 6x5 grid of tile letters
+  const [colorGrid, setColorGrid] = useState(colorGridDefault); //the 6x5 grid of tile colors
+  const [keyColors, setKeyColors] = useState(keyColorDefault);  //list of colors for each keyboard key
+  const [currAttempt, setCurrAttempt] = useState({              //data about current state
     attempt: 0,
     letterPos: 0,
     keyVal: ""
   });
-  const [showInfo, setShowInfo] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [win, setWin] = useState(true);
-  const [cookieDate, setCookieDate] = useState("");
-  const [cookieWords, setCookieWords] = useState([]);
-  const [cookieGameOver, setCookieGameOver] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);              //boolean whether to show info screen
+  const [gameOver, setGameOver] = useState(false);              //boolean for if the game is over
+  const [win, setWin] = useState(true);                         //boolean for if the player won
 
   //function to get wordList, correctWord, and usedWords
   async function fetchTextFile() {
-    const { words, usedWords, correctWord } = await fetchData()
+    const { words, used_words, correct_word } = await fetchData()
     setWordList(words)
-    setUsedWords(usedWords)
-    setCorrectWord(correctWord)
+    setUsedWords(used_words)
+    const temp = () => setCorrectWord(correct_word);
+    console.log("fetched correct word, correct word is " + correctWord)
   }
 
-  //function to get data from cookie
-  async function fetchCookieData() {
-    const date = await Cookies.get('date'); 
-    setCookieDate(date)
-    const words = await Cookies.get('words');
-    setCookieWords(words)
-    const over = await Cookies.get('over');
-    setCookieGameOver(over)
-  }
-
-  function interpretCookie() {
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-    let today = `${day}-${month}-${year}`;
-
-    console.log("interpreting cookie. date " + cookieDate + " words " + cookieWords + " over " + cookieGameOver)
-    //they've already played today
-    if (today == cookieDate) {
-      //submit the words they've already entered
-      for (let i=0; i<cookieWords.length; i++) submitWord(cookieWords[i]);
-      //check for game over
-      if (cookieGameOver) setGameOver(true);
+  /* async function getPlayerData() {
+    try {
+      const data = await JSON.parse(localStorage.getItem('fuddle-puzzle-data'))
+      console.log("Read player data:", data)
+      if (typeof data !== 'object')
+        console.log("data is not an object")
+      if (Array.isArray(data)) 
+        console.log("data is an array")
+      if (data === null) {
+        console.log("data is null")
+        return defaultPlayerData()
+      }
+      
+      return data;
+    } catch (error) {
+      console.error(error)
+      console.warn("Failed reading JSON, using default data.")
+      return defaultPlayerData()
     }
-    //they haven't played today, get the new cookie ready
-    else {
-      console.log("setting new cookie")
-      setCookieDate(today)
-      setCookieWords([])
-      setCookieGameOver(false)
+  } */
+
+  async function readyGame(corr_word) {
+    console.log("This is readyGame() calling safelyReadPlayerData()")
+    const data = safelyReadPlayerData()
+    console.log("This is readyGame(). Data I got from sRPD is:", data)
+    if (data.date == todayString()) {
+      //They've played today. Set up the board.
+      console.log("This is readyGame(). Player has already played today.")
+      for (let i=0; i<data.guessedWords.length; i++) {
+        console.log("This is readyGame() loop. Reading guessedWords one by one.")
+        const current_word = data.guessedWords[i]
+        console.log("This is readyGame() loop. Current word is " + current_word)
+        //submit the word and update local storage
+        for (let i = 0; i < 5; i++) {
+          console.log("This is readyGame() letter loop. Calling handleLetter with " + current_word[i])
+          handleLetter(current_word[i])
+        }
+        submitWord(current_word, corr_word)
+      }
+      setGameOver(data.over)
+    } else {
+      //They haven't played today. Reset local storage.
+      resetLSData()
     }
-    console.log("finishing cookie. date " + cookieDate + " words " + cookieWords + " over " + cookieGameOver)
   }
 
   //call the function on app load
   useEffect(() => {
-    fetchTextFile();
-    fetchCookieData();
-    interpretCookie();
-    console.log("finishing cookie. date " + cookieDate + " words " + cookieWords + " over " + cookieGameOver)
+    const runFunctions = async () => {
+      await fetchTextFile(); // Function A
+      readyGame(correctWord);             // Function B
+    };
+
+    runFunctions()
+    
   }, []);
   
   //handle when user enters a letter
@@ -145,20 +161,21 @@ function App() {
       } 
     }
 
-    //submit the word and update the cookie
-    submitWord(word_entered);
-    console.log(cookieDate)
-    console.log(cookieWords)
-    const newWords =  [...cookieWords];
-    newWords[currAttempt.attempt-1] = word_entered;
-    setCookieWords(newWords);
-    setCookie();
+    //submit the word and add it to local storage
+    submitWord(word_entered, false)
+    addWordToLS(word_entered)
   }
 
-  function submitWord(word_entered) {
+  function submitWord(word_entered, corr_word) {
     let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
     let taken = [];                                             //this holds indices of 'taken' letters
-    let temp_word = correctWord;                                //duplicate of the correct word that we can modify
+    let temp_word = "";
+    try {
+      temp_word = corr_word;
+    } catch (error) {
+      temp_word = correctWord;                                //duplicate of the correct word that we can modify
+    }
+    
 
     //check for green
     for (let i = 0; i < 5; i++) {
@@ -189,15 +206,14 @@ function App() {
       }
     }
 
-    //update the board
+    //update the board (tile colors)
     const newColorGrid = to2dDeepCopy(colorGrid)
     newColorGrid[currAttempt.attempt] = [...new_colors];
     setColorGrid(newColorGrid);
 
-    //advance to next row
-    currAttempt.attempt += 1;
-    currAttempt.letterPos = 0;
-    setCurrAttempt({ ...currAttempt }) // update state
+    if (!fromLS) currAttempt.attempt += 1;  //advance to next row if called from handleEnter()
+    currAttempt.letterPos = 0;              //go back to left position
+    setCurrAttempt({ ...currAttempt })      // update state
 
     //check for end of game
     if (word_entered === correctWord) {
@@ -233,17 +249,6 @@ function App() {
   function getColorFromKey( the_key ) {
     const foundIndex = keyColors.findIndex(x => x.letter == the_key);
     return keyColors[foundIndex].color;
-  }
-
-  function setCookie() {
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let cookiedate = `${day}-${month}-${year}`;
-    Cookies.set("date", cookiedate, { expires: 2 });
-    Cookies.set("words", cookieWords, { expires: 2 });
   }
 
   //this is necessary because using the keyboard is different than clicking a key
@@ -285,7 +290,7 @@ function App() {
         }}
       >
         <div className="game">
-          {showInfo ? <InfoScreen /> : (gameOver ? <><Board /><WinScreen /></> : <><Board /><Keyboard /></>)}
+          {showInfo ? <InfoScreen /> : (gameOver ? <><button onClick={resetLSData}>R</button><Board /><WinScreen /></> : <><button onClick={resetLSData}>R</button><Board /><Keyboard /></>)}
         </div>
       </AppContext.Provider>
     </div>
