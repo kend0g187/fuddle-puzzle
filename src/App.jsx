@@ -41,11 +41,10 @@ function App() {
 
   //function to get wordList, correctWord, and usedWords
   async function fetchTextFile() {
-    const { words, used_words, correct_word } = await fetchData()
+    const { words, usedWords, correctWord } = await fetchData()
     setWordList(words)
-    setUsedWords(used_words)
-    const temp = () => setCorrectWord(correct_word);
-    console.log("fetched correct word, correct word is " + correctWord)
+    setUsedWords(usedWords)
+    setCorrectWord(correctWord);
   }
 
   /* async function getPlayerData() {
@@ -69,24 +68,13 @@ function App() {
     }
   } */
 
-  async function readyGame(corr_word) {
+  async function readyGame() {
     console.log("This is readyGame() calling safelyReadPlayerData()")
     const data = safelyReadPlayerData()
     console.log("This is readyGame(). Data I got from sRPD is:", data)
     if (data.date == todayString()) {
       //They've played today. Set up the board.
       console.log("This is readyGame(). Player has already played today.")
-      for (let i=0; i<data.guessedWords.length; i++) {
-        console.log("This is readyGame() loop. Reading guessedWords one by one.")
-        const current_word = data.guessedWords[i]
-        console.log("This is readyGame() loop. Current word is " + current_word)
-        //submit the word and update local storage
-        for (let i = 0; i < 5; i++) {
-          console.log("This is readyGame() letter loop. Calling handleLetter with " + current_word[i])
-          handleLetter(current_word[i])
-        }
-        submitWord(current_word, corr_word)
-      }
       setGameOver(data.over)
     } else {
       //They haven't played today. Reset local storage.
@@ -94,15 +82,10 @@ function App() {
     }
   }
 
-  //call the function on app load
+  //call the functions on app load
   useEffect(() => {
-    const runFunctions = async () => {
-      await fetchTextFile(); // Function A
-      readyGame(correctWord);             // Function B
-    };
-
-    runFunctions()
-    
+    fetchTextFile();
+    readyGame();
   }, []);
   
   //handle when user enters a letter
@@ -162,20 +145,14 @@ function App() {
     }
 
     //submit the word and add it to local storage
-    submitWord(word_entered, false)
+    submitWord(word_entered)
     addWordToLS(word_entered)
   }
 
-  function submitWord(word_entered, corr_word) {
+  function submitWord(word_entered) {
     let new_colors = ["dark", "dark", "dark", "dark", "dark"];  //this holds Tile colors for the current row
     let taken = [];                                             //this holds indices of 'taken' letters
-    let temp_word = "";
-    try {
-      temp_word = corr_word;
-    } catch (error) {
-      temp_word = correctWord;                                //duplicate of the correct word that we can modify
-    }
-    
+    let temp_word = correctWord;
 
     //check for green
     for (let i = 0; i < 5; i++) {
@@ -198,11 +175,15 @@ function App() {
         new_colors[i] = "yellow";                       //update new_colors array
         let letter_index = temp_word.indexOf(ltr)       //remove the letter from temp_word
         temp_word = temp_word.slice(0, letter_index) + temp_word.slice(letter_index + 1);
-        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
+        if (getColorFromKey(word_entered[i]) == "gray") {
+          replaceKeyColor(word_entered[i], "yellow");   //replace the color of the Keyboard key
+        }
       }
       else {
         //tile must be dark, make keyboard key dark, if it's not already green or yellow
-        if (getColorFromKey(word_entered[i]) == "gray") replaceKeyColor(word_entered[i], "dark");   //replace the color of the Keyboard key
+        if (getColorFromKey(word_entered[i]) == "gray") {
+          replaceKeyColor(word_entered[i], "dark");   //replace the color of the Keyboard key
+        }
       }
     }
 
@@ -211,7 +192,7 @@ function App() {
     newColorGrid[currAttempt.attempt] = [...new_colors];
     setColorGrid(newColorGrid);
 
-    if (!fromLS) currAttempt.attempt += 1;  //advance to next row if called from handleEnter()
+    currAttempt.attempt += 1;               //advance to next row
     currAttempt.letterPos = 0;              //go back to left position
     setCurrAttempt({ ...currAttempt })      // update state
 
