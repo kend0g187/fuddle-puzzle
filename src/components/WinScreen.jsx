@@ -14,7 +14,7 @@ function WinScreen() {
   else message = 'You lost! The word was ' + correctWord + '.';
 
   return (
-    <div>
+    <div className='win-screen'>
       <h2>{message}</h2>
     </div>
   );

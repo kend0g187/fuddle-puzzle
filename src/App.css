@@ -161,6 +161,10 @@ nav img {
   background-color: #AAAAAA;
 }
 
+.win-screen {
+  height: 210px;
+}
+
 .game-instructions {
   font-family: 'Rubik', sans-serif;
   text-align: left;
