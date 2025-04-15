@@ -81,8 +81,7 @@ export async function fetchData() {
   const words = text.split('\n').map(w => w.trim()) // split by new line, and remove extra space on each word
 
   // get number of days since Jan 1 and generate used words list
-  const jan1 = new Date(`${year}-01-01`)
-  const daysSince = Math.floor((now.getTime() - jan1.getTime())/1000/60/60/24)
+  const daysSince = daysSinceJan1()
   const correctWord = words[daysSince]
   const usedWords = words.slice(0, daysSince)
 
@@ -93,7 +92,10 @@ export function savePlayerData(data = {}) {
   localStorage.setItem('fuddle-puzzle-data', JSON.stringify({
     date: data.date || todayString(),
     guessedWords: data.guessedWords || [],
-    over: data.over || false
+    over: data.over || false,
+    win: data.win || false,
+    letters: data.letters || [],
+    colors: data.colors || []
   }))
 }
 
@@ -101,7 +103,10 @@ export function defaultPlayerData() {
   return {
     date: todayString(),
     guessedWords: [],
-    over: false
+    over: false,
+    win: true,
+    letters: [],
+    colors: []
   }
 }
 
@@ -112,16 +117,8 @@ export function resetLSData() {
 export function safelyReadPlayerData() {
   try {
     const data = JSON.parse(localStorage.getItem('fuddle-puzzle-data'))
-    console.log("This is safelyReadPlayerData. Data is:", data)
-    if (typeof data !== 'object')
-      console.log("data is not an object")
-    if (Array.isArray(data))
-      console.log("data is an array")
-    if (data === null) {
-      console.log("data is null")
+    if (typeof data !== 'object' || Array.isArray(data) || data === null)
       return defaultPlayerData()
-    }
-
     return data;
   } catch (error) {
     console.error(error)
@@ -133,16 +130,47 @@ export function safelyReadPlayerData() {
 export function addWordToLS(word) {
   const data = safelyReadPlayerData()
   data.guessedWords.push(word)
-  console.log("Saving new guessed word:", word, data)
+  savePlayerData(data)
+}
+
+export function addLetterToLS(letter) {
+  const data = safelyReadPlayerData()
+  data.letters.push(letter)
+  savePlayerData(data)
+}
+
+export function addColorToLS(color) {
+  const data = safelyReadPlayerData()
+  data.colors.push(color)
   savePlayerData(data)
 }
 
 export function todayString() {
   const date = new Date();
-
   const day = date.getDate();
-  const month = date.getMonth() + 1; // The month index starts from 0
+  const month = date.getMonth() + 1;  // The month index starts from 0
   const year = date.getFullYear();
 
   return `${year}-${month}-${day}`;
+}
+
+function daysInFeb() {
+  const now = new Date()
+  const yearString = now.getFullYear()
+  if (+yearString % 4 == 0)
+    return 29;
+  return 28;
+}
+
+function daysSinceJan1() {
+  const daysInMonths = [31, daysInFeb(), 31, 30, 31, 30, 31, 31, 30, 31, 30]
+  const now = new Date()
+  const monthNum = +(now.getMonth())
+  const dateNum = +(now.getDate())
+  let numDays = 0
+  for (let i=0; i<monthNum; i++) {  //add up all the days of past months
+    numDays += daysInMonths[i]
+  }
+  numDays += dateNum                //add number of days in current month (so far)
+  return --numDays                  //subtract 1 since Jan 1 should return 0
 }

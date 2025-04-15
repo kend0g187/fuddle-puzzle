@@ -5,18 +5,21 @@ import Keyboard from './components/Keyboard'
 import WinScreen from './components/WinScreen'
 import InfoScreen from './components/InfoScreen.jsx'
 import { 
-  boardDefault,       //2d array of blank tile letters
-  colorGridDefault,   //2d array of blank tile colors
-  keyColorDefault,    //array of default keyboard key colors
-  allLetters,         //array of 26 lowercase and 26 uppercase letters
-  removeChar,         //function to remove a letter from a word
-  to2dDeepCopy,       //function to create a real copy of a 2d array
-  todayString,        //function to get today's date as a string
-  fetchData,          //function to read in the word list
-  defaultPlayerData,  //function to get defaults for LS data
-  addWordToLS,        //function to add submitted word to LS 'guessedWords'
-  resetLSData,        //function to reset LS data
-  safelyReadPlayerData
+  boardDefault,         //2d array of blank tile letters
+  colorGridDefault,     //2d array of blank tile colors
+  keyColorDefault,      //array of default keyboard key colors
+  allLetters,           //array of 26 lowercase and 26 uppercase letters
+  removeChar,           //function to remove a letter from a word
+  to2dDeepCopy,         //function to create a real copy of a 2d array
+  todayString,          //function to get today's date as a string
+  fetchData,            //function to read in the word list
+  defaultPlayerData,    //function to get defaults for LS data
+  addWordToLS,          //function to add submitted word to LS 'guessedWords'
+  addLetterToLS,        //function to add letter of submitted word to LS 'letters'
+  addColorToLS,         //function to add color of submitted letters to LS 'colors'
+  resetLSData,          //function to reset LS data
+  safelyReadPlayerData,  //function to read LS data
+  savePlayerData
 } from './util.js'
 
 //used to store globals
@@ -38,6 +41,7 @@ function App() {
   const [showInfo, setShowInfo] = useState(false);              //boolean whether to show info screen
   const [gameOver, setGameOver] = useState(false);              //boolean for if the game is over
   const [win, setWin] = useState(true);                         //boolean for if the player won
+  const [prevent, setPrevent] = useState(true)                  //boolean to prevent LS from triggering actions
 
   //function to get wordList, correctWord, and usedWords
   async function fetchTextFile() {
@@ -47,35 +51,51 @@ function App() {
     setCorrectWord(correctWord);
   }
 
-  /* async function getPlayerData() {
-    try {
-      const data = await JSON.parse(localStorage.getItem('fuddle-puzzle-data'))
-      console.log("Read player data:", data)
-      if (typeof data !== 'object')
-        console.log("data is not an object")
-      if (Array.isArray(data)) 
-        console.log("data is an array")
-      if (data === null) {
-        console.log("data is null")
-        return defaultPlayerData()
-      }
-      
-      return data;
-    } catch (error) {
-      console.error(error)
-      console.warn("Failed reading JSON, using default data.")
-      return defaultPlayerData()
-    }
-  } */
-
   async function readyGame() {
-    console.log("This is readyGame() calling safelyReadPlayerData()")
     const data = safelyReadPlayerData()
-    console.log("This is readyGame(). Data I got from sRPD is:", data)
+    
+    //if they've played today set up the board.
     if (data.date == todayString()) {
-      //They've played today. Set up the board.
-      console.log("This is readyGame(). Player has already played today.")
+      //if they haven't submitted any words do nothing
+      if (data.guessedWords.length == 0) return
+
+      //update the board (tile letters)
+      const newBoard = [...board]
+      //loop for each word
+      for (let i=0; i<data.guessedWords.length; i++) {
+        //loop for each letter
+        for (let j=0; j<5; j++) {
+          newBoard[i][j] = data.letters[5*i+j]
+        }
+      }
+      setBoard(newBoard)
+
+      //update the board (tile colors)
+      const newColorGrid = [...colorGridDefault]
+      //loop for each word
+      for (let i = 0; i < data.guessedWords.length; i++) {
+        //loop for each letter
+        for (let j = 0; j < 5; j++) {
+          newColorGrid[i][j] = data.colors[5 * i + j]
+        }
+      }
+      setColorGrid(newColorGrid)
+
+      //update the keyboard colors 
+      for (let i=0; i<data.letters.length; i++) {
+        replaceKeyColor(data.letters[i], "dark")
+      }
+      for (let i = 0; i < data.letters.length; i++) {
+        if (data.colors[i] == "yellow") replaceKeyColor(data.letters[i], "yellow")
+      }
+      for (let i = 0; i < data.letters.length; i++) {
+        if (data.colors[i] == "green") replaceKeyColor(data.letters[i], "green")
+      }
+      //update the rest
+      currAttempt.attempt = data.guessedWords.length;              
+      setCurrAttempt({ ...currAttempt })      
       setGameOver(data.over)
+      setWin(data.win)
     } else {
       //They haven't played today. Reset local storage.
       resetLSData()
@@ -144,9 +164,8 @@ function App() {
       } 
     }
 
-    //submit the word and add it to local storage
+    //submit the word (This change colorGrid, triggering our useEffect to update local storage.)
     submitWord(word_entered)
-    addWordToLS(word_entered)
   }
 
   function submitWord(word_entered) {
@@ -187,6 +206,9 @@ function App() {
       }
     }
 
+    //set flag so this will be saved to LS
+    setPrevent(false)
+
     //update the board (tile colors)
     const newColorGrid = to2dDeepCopy(colorGrid)
     newColorGrid[currAttempt.attempt] = [...new_colors];
@@ -197,6 +219,7 @@ function App() {
     setCurrAttempt({ ...currAttempt })      // update state
 
     //check for end of game
+    const data = safelyReadPlayerData()
     if (word_entered === correctWord) {
       setWin((prev) => true);
       setGameOver(true);
@@ -206,6 +229,32 @@ function App() {
       setGameOver(true);
     }
   }
+
+  //Save data to local storage each time a word is submitted.
+  //Each time a word is submitted, the colorGrid gets updated, triggering this useEffect.
+  useEffect(() => {
+    //just exit if the app is still loading or if this is triggered by LS
+    if (currAttempt.attempt == 0 || prevent) return;
+
+    //build the word and add it to LS
+    const word_with_commas = board[currAttempt.attempt-1]
+    const word_entered = word_with_commas.join("")
+    addWordToLS(word_entered)
+
+    //add the individual letters and colors to LS
+    for (let i = 0; i < 5; i++) {
+      addLetterToLS(word_entered[i])
+      addColorToLS(colorGrid[currAttempt.attempt - 1][i])
+    }
+  }, [colorGrid]);
+
+  //update win and gameover
+  useEffect(() => {
+    const data = safelyReadPlayerData()
+    data.over = gameOver
+    data.win = win
+    savePlayerData(data)
+  }, [gameOver]);
 
   function clearRow() {
     //update the board
@@ -271,7 +320,7 @@ function App() {
         }}
       >
         <div className="game">
-          {showInfo ? <InfoScreen /> : (gameOver ? <><button onClick={resetLSData}>R</button><Board /><WinScreen /></> : <><button onClick={resetLSData}>R</button><Board /><Keyboard /></>)}
+          {showInfo ? <InfoScreen /> : (gameOver ? <><Board /><WinScreen /></> : <><Board /><Keyboard /></>)}
         </div>
       </AppContext.Provider>
     </div>

@@ -23,12 +23,12 @@ nav {
   padding-bottom: 8px;
   width: 100%;
   margin: 0;
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid black;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
-  background-color: lightgray;
+  background-color: lightblue;
 }
 
 nav .spacer {
@@ -50,11 +50,14 @@ nav h1 {
 nav img {
   cursor: pointer;
   width: 28px;
+  color: black;
+  margin-right: 5px;
 }
 
 .game {
   width: 100vw;
   height: calc(100vh - 170px);
+  max-height: 736px;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -96,56 +99,37 @@ nav img {
   place-items: center;
   font-size: 30px;
   font-weight: bolder;
-  color: white;
-  background-color: gray;
+  color: black;
+  background-color: lightblue;
   font-family: Arial, Helvetica, sans-serif;
 }
 
 .green {
-  background-color: #4CAF50;
+  background-color: #1A8D2E;
+  color: white;
 }
 
 .yellow {
-  background-color: #FFC107;
+  background-color: #BB9900;
+  color: white;
 }
 
 .dark {
-  background-color: #424242;
+  background-color: #525252;
+  color: white;
 }
 
 .gray {
-  background-color: gray;
-}
-
-.unchecked {
-  background-color: #3a393c;
+  background-color: #AAAAAA;
 }
 
 .keyboard {
   max-width: 450px;
   max-height: 250px;
-  /* position: absolute; */
   bottom: 5px;
 }
 
-.line1 {
-  flex: 33%;
-  display: flex;
-  flex-direction: row;
-  display: flex;
-  justify-content: center;
-  margin: 3px;
-}
-
-.line2 {
-  flex: 33%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin: 3px;
-}
-
-.line3 {
+.line {
   flex: 33%;
   display: flex;
   flex-direction: row;
@@ -167,16 +151,20 @@ nav img {
   cursor: pointer;
 }
 
+.key.gray {
+  color: black;
+}
+
 .big {
   width: 57px;
   max-width: calc(15vw - 6px);
-  background-color: grey;
+  background-color: #AAAAAA;
 }
 
 .game-instructions {
   font-family: 'Rubik', sans-serif;
   text-align: left;
-  color: white;
+  color: black;
   padding: 16px;
   font-size: 16px;
   line-height: 1.5;
@@ -201,7 +189,7 @@ nav img {
 }
 
 .game-instructions a {
-  color: #66ccff;
+  color: blue;
   text-decoration: underline;
 }
 

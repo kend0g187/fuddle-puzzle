@@ -23,17 +23,17 @@ function Keyboard() {
 
   return (
     <div className="keyboard" onKeyDown={eventToString}>
-      <div className="line1">
+      <div className="line">
         {keys1.map((key) => {
           return <Key keyVal={key} color={getColorFromKey(key)} key={key} />;
         })}
       </div>
-      <div className="line2">
+      <div className="line">
         {keys2.map((key) => {
           return <Key keyVal={key} color={getColorFromKey(key)} key={key} />;
         })}
       </div>
-      <div className="line3">
+      <div className="line">
         <Key icon="return.svg" iconAlt="enter icon" keyVal="ENTER" bigKey />
         {keys3.map((key) => {
           return <Key keyVal={key} color={getColorFromKey(key)} key={key} />;
