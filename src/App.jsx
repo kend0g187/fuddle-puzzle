@@ -13,13 +13,13 @@ import {
   to2dDeepCopy,         //function to create a real copy of a 2d array
   todayString,          //function to get today's date as a string
   fetchData,            //function to read in the word list
-  defaultPlayerData,    //function to get defaults for LS data
+  // defaultPlayerData,    //function to get defaults for LS data
   addWordToLS,          //function to add submitted word to LS 'guessedWords'
   addLetterToLS,        //function to add letter of submitted word to LS 'letters'
   addColorToLS,         //function to add color of submitted letters to LS 'colors'
   resetLSData,          //function to reset LS data
-  safelyReadPlayerData,  //function to read LS data
-  savePlayerData
+  safelyReadPlayerData, //function to read LS data
+  savePlayerData        //function to save data to LS
 } from './util.js'
 
 //used to store globals
@@ -30,6 +30,7 @@ function App() {
   const [correctWord, setCorrectWord] = useState([]);           //the answer
   const [usedWords, setUsedWords] = useState([]);               //list of past answers
   const [wordList, setWordList] = useState([]);                 //list of all possible answers
+  const [allWordList, setAllWordList] = useState([]);           //list of all 5-letter words
   const [board, setBoard] = useState(boardDefault);             //the 6x5 grid of tile letters
   const [colorGrid, setColorGrid] = useState(colorGridDefault); //the 6x5 grid of tile colors
   const [keyColors, setKeyColors] = useState(keyColorDefault);  //list of colors for each keyboard key
@@ -51,6 +52,19 @@ function App() {
     setCorrectWord(correctWord);
   }
 
+  async function fetchAllWords() {
+    const wordListURL = "/5780words.txt"
+
+    // fetch list
+    const res = await fetch(wordListURL)
+    if (!res.ok) throw new Error(`Could not fetch word list at "${wordListURL}". Are you sure there is a word list?`);
+    const text = await res.text()
+    const words = text.split('\n').map(w => w.trim()) // split by new line, and remove extra space on each word
+
+    setAllWordList(words)
+  }
+
+  //function to get the game ready from LS data
   async function readyGame() {
     const data = safelyReadPlayerData()
     
@@ -105,6 +119,7 @@ function App() {
   //call the functions on app load
   useEffect(() => {
     fetchTextFile();
+    fetchAllWords();
     readyGame();
   }, []);
   
@@ -148,11 +163,20 @@ function App() {
       word_entered = word_entered + board[currAttempt.attempt][i];
     }
 
-    //check if word is in list
-    if (!wordList.includes(word_entered)) {
+    //check if word is not in any list
+    if (!allWordList.includes(word_entered)) {
       alert(word_entered + " is not in the word list!");
       clearRow();
       return;
+    }
+
+    //check if word is not in word list
+    if (allWordList.includes(word_entered) && !wordList.includes(word_entered)) {
+      let text = word_entered + " is not a valid Fuddle Puzzle word. Would you still like to submit it?";
+      if (confirm(text) == false) {
+        clearRow();
+        return;
+      }
     }
 
     //check if word has been used
