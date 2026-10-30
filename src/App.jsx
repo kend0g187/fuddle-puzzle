@@ -90,7 +90,7 @@ function App() {
       for (let i = 0; i < data.guessedWords.length; i++) {
         //loop for each letter
         for (let j = 0; j < 5; j++) {
-          newColorGrid[i][j] = data.colors[5 * i + j]
+          newColorGrid[i][j] = data.colors[5*i+j]
         }
       }
       setColorGrid(newColorGrid)
